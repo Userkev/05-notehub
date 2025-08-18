@@ -1,22 +1,49 @@
-.backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(33, 37, 41, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+import { createPortal } from "react-dom"
+import css from "./Modal.module.css"
+import { useEffect } from "react";
+//import NoteForm from "../NoteForm/NoteForm";
+//import { Formik, Form,Field  } from "formik";
+
+interface ModalProps {
+    onClose: () => void,
+    //onMutation: (value: boolean) => void,
+    children: React.ReactNode,
 }
 
-.modal {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 100%;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+export default function Modal({ onClose, children }:ModalProps) {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                onClose();
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "hidden";
+        
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = "";
+        };
+    }, [onClose]);
+    
+    function handleBackdropClick(event: React.MouseEvent<HTMLDivElement>) {
+        if (event.target === event.currentTarget) {
+            onClose();
+        }
+    }
+
+
+    return createPortal(
+        <div
+            className={css.backdrop}
+            role="dialog"
+            aria-modal="true"
+            onClick={handleBackdropClick}
+        >
+            <div className={css.modal}>
+                    {children}
+            </div>
+        </div>,
+        document.body
+    );
 }
